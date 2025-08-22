@@ -1,4 +1,4 @@
-package com.application.m9asia.new.gamb
+package com.application.m9asianew.gamb
 
 import io.flutter.embedding.android.FlutterActivity
 
