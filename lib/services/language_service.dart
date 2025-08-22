@@ -47,14 +47,14 @@ class LanguageService {
     }
   }
 
-  // New method to get available language codes
+  // Get available language codes from API
   Future<List<String>> getAvailableLanguageCodes() async {
     try {
       final languages = await fetchAllLanguageStrings();
       return languages.keys.toList();
     } catch (e) {
-      // Fallback to default languages if API fails
-      return ['en', 'my'];
+      // If API fails, return empty list
+      return [];
     }
   }
 }

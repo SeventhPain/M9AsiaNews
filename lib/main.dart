@@ -11,13 +11,7 @@ void main() async {
   // Get saved language or use Myanmar as default
   final String languageCode = await LanguageManager.getLanguage();
 
-  // Verify the language is available, fallback to my if not
-  final bool isLanguageAvailable = await LanguageManager.isLanguageAvailable(
-    languageCode,
-  );
-  final String finalLanguageCode = isLanguageAvailable ? languageCode : 'my';
-
-  runApp(MyApp(locale: LanguageManager.getLocale(finalLanguageCode)));
+  runApp(MyApp(locale: LanguageManager.getLocale(languageCode)));
 }
 
 class MyApp extends StatefulWidget {
@@ -59,11 +53,7 @@ class _MyAppState extends State<MyApp> {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: const [
-        Locale('en', ''),
-        Locale('my', ''),
-        // Add more locales as needed, they will be dynamically checked
-      ],
+      supportedLocales: const [Locale('en', ''), Locale('my', '')],
       theme: ThemeData(
         primaryColor: AppConstants.primaryColor,
         colorScheme: ColorScheme.fromSwatch().copyWith(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:m9_news/l10n/app_localization.dart';
 import 'package:m9_news/services/language_service.dart';
 import 'package:http/http.dart' as http;
+import 'package:m9_news/utils/language_manager.dart';
 
 class LanguageDialog extends StatefulWidget {
   final String currentLanguage;
@@ -25,18 +25,6 @@ class _LanguageDialogState extends State<LanguageDialog> {
     _availableLanguagesFuture = _languageService.getAvailableLanguageCodes();
   }
 
-  String _getLanguageName(String languageCode, BuildContext context) {
-    final localizations = AppLocalizations.of(context);
-    switch (languageCode) {
-      case 'en':
-        return localizations?.english ?? 'English';
-      case 'my':
-        return localizations?.myanmar ?? 'Myanmar';
-      default:
-        return languageCode.toUpperCase();
-    }
-  }
-
   Widget _getLanguageFlag(String languageCode) {
     final flagEmoji = {'en': '🇺🇸', 'my': '🇲🇲'}[languageCode] ?? '🌐';
 
@@ -45,10 +33,8 @@ class _LanguageDialogState extends State<LanguageDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context);
-
     return AlertDialog(
-      title: Text(localizations?.selectLanguage ?? 'Select Language'),
+      title: const Text('Select Language'),
       content: SizedBox(
         width: double.maxFinite,
         child: FutureBuilder<List<String>>(
@@ -58,23 +44,39 @@ class _LanguageDialogState extends State<LanguageDialog> {
               return const Center(child: CircularProgressIndicator());
             }
 
-            if (snapshot.hasError) {
-              return Center(
+            if (snapshot.hasError ||
+                snapshot.data == null ||
+                snapshot.data!.isEmpty) {
+              return const Center(
                 child: Text(
-                  'Failed to load languages',
-                  style: TextStyle(color: Colors.red[700]),
+                  'No languages available',
+                  style: TextStyle(color: Colors.red),
                 ),
               );
             }
 
-            final availableLanguages = snapshot.data ?? ['en', 'my'];
+            final availableLanguages = snapshot.data!;
 
             return ListView(
               shrinkWrap: true,
               children: availableLanguages.map((languageCode) {
                 return ListTile(
                   leading: _getLanguageFlag(languageCode),
-                  title: Text(_getLanguageName(languageCode, context)),
+                  title: FutureBuilder<String>(
+                    future: LanguageManager.getLanguageName(
+                      languageCode,
+                      context,
+                    ),
+                    builder: (context, nameSnapshot) {
+                      if (nameSnapshot.connectionState ==
+                          ConnectionState.waiting) {
+                        return Text(languageCode.toUpperCase());
+                      }
+                      return Text(
+                        nameSnapshot.data ?? languageCode.toUpperCase(),
+                      );
+                    },
+                  ),
                   trailing: widget.currentLanguage == languageCode
                       ? const Icon(Icons.check, color: Colors.green)
                       : null,
@@ -90,7 +92,7 @@ class _LanguageDialogState extends State<LanguageDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text(localizations?.cancel ?? 'Cancel'),
+          child: const Text('Cancel'),
         ),
       ],
     );

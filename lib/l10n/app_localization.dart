@@ -16,111 +16,45 @@ class AppLocalizations {
   static const LocalizationsDelegate<AppLocalizations> delegate =
       _AppLocalizationsDelegate();
 
-  // Static fallback translations
-  static final Map<String, Map<String, String>> _fallbackLocalizedValues = {
-    'en': {
-      'appName': 'M9 News',
-      'helloReader': 'Hello Reader!',
-      'discoverNews': 'Discover Latest News',
-      'categories': 'Categories',
-      'all': 'All',
-      'noNews': 'No news available',
-      'readMore': 'Read More',
-      'retry': 'Retry',
-      'errorMessage': 'Something went wrong',
-      'contactUs': 'Contact Us',
-      'call': 'Call',
-      'email': 'Email',
-      'chat': 'Chat',
-      'refresh': 'Refresh',
-      'football': 'Football',
-      'cartoon': 'Cartoon',
-      'game': 'Game',
-      'settings': 'Settings',
-      'language': 'Language',
-      'english': 'English',
-      'myanmar': 'Myanmar',
-      'selectLanguage': 'Select Language',
-      'cancel': 'Cancel',
-      'save': 'Save',
-      'privacyPolicy': 'Privacy Policy',
-    },
-    'my': {
-      'appName': 'M9 သတင်း',
-      'helloReader': 'စာဖတ်သူ မင်္ဂလာပါ!',
-      'discoverNews': 'နောက်ဆုံးရသတင်းများ ရှာဖွေပါ',
-      'categories': 'အမျိုးအစားများ',
-      'all': 'အားလုံး',
-      'noNews': 'သတင်းများ မရှိပါ',
-      'readMore': 'ဆက်ဖတ်ရန်',
-      'retry': 'ထပ်ကြိုးစားပါ',
-      'errorMessage': 'တစ်ခုခု မှားယွင်းနေပါသည်',
-      'contactUs': 'ဆက်သွယ်ရန်',
-      'call': 'ဖုန်းခေါ်ဆိုရန်',
-      'email': 'အီးမေးလ်',
-      'chat': 'ချတ်',
-      'refresh': 'ပြန်လည်မွမ်းမံရန်',
-      'football': 'ဘောလုံး',
-      'cartoon': 'ကာတွန်း',
-      'game': 'ဂိမ်း',
-      'settings': 'ဆက်တင်များ',
-      'language': 'ဘာသာစကား',
-      'english': 'အင်္ဂလိပ်',
-      'myanmar': 'မြန်မာ',
-      'selectLanguage': 'ဘာသာစကား ရွေးချယ်ပါ',
-      'cancel': 'မလုပ်တော့ပါ',
-      'save': 'သိမ်းဆည်းပါ',
-      'privacyPolicy': 'ကိုယ်ရေးကိုယ်တာ မူဝါဒ',
-    },
-  };
-
-  // Initialize - try API first, fallback to static if fails
+  // Initialize - load language strings from API
   Future<void> initialize() async {
     final languageService = LanguageService(client: http.Client());
 
     try {
-      // Try to fetch all languages from API
+      // Fetch all languages from API
       final Map<String, Map<String, String>> allLanguages =
           await languageService.fetchAllLanguageStrings();
 
-      // Check if current locale is supported by API
+      // Get strings for current locale
       if (allLanguages.containsKey(locale.languageCode)) {
         _currentStrings = allLanguages[locale.languageCode]!;
         if (kDebugMode) {
           print('Loaded ${locale.languageCode} strings from API');
         }
       } else {
-        // If current locale not in API, fallback to static
-        throw Exception('Language ${locale.languageCode} not available in API');
+        // If current locale not found, use first available language or empty
+        final availableLanguages = allLanguages.keys.toList();
+        if (availableLanguages.isNotEmpty) {
+          _currentStrings = allLanguages[availableLanguages.first]!;
+        } else {
+          _currentStrings = {};
+        }
       }
     } catch (e) {
-      // Fallback to static values if API fails
+      // If API fails completely, use empty strings
       if (kDebugMode) {
-        print('Using fallback language strings for ${locale.languageCode}: $e');
+        print('Failed to load language strings from API: $e');
       }
-      _currentStrings =
-          _fallbackLocalizedValues[locale.languageCode] ??
-          _fallbackLocalizedValues['my']!;
+      _currentStrings = {};
     }
   }
 
-  // Get string with proper fallback handling
+  // Get string from API response
   String _getString(String key) {
-    // Try current strings (from API or fallback)
-    if (_currentStrings.containsKey(key)) {
-      return _currentStrings[key]!;
-    }
-
-    // Fallback to Myanmar static values
-    if (_fallbackLocalizedValues['my']!.containsKey(key)) {
-      return _fallbackLocalizedValues['my']![key]!;
-    }
-
-    // Final fallback to key itself
-    return key;
+    return _currentStrings[key] ?? key; // Return key as fallback if not found
   }
 
-  // Getters for all strings
+  // Getters for all strings - these will return the key if not found in API
   String get appName => _getString('appName');
   String get helloReader => _getString('helloReader');
   String get discoverNews => _getString('discoverNews');
@@ -155,7 +89,7 @@ class _AppLocalizationsDelegate
   @override
   bool isSupported(Locale locale) {
     // Support all languages that might come from API
-    return true; // We'll dynamically check availability
+    return true;
   }
 
   @override

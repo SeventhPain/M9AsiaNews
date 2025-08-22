@@ -103,14 +103,11 @@ class _HomePageState extends State<HomePage> {
         return;
       }
     } catch (e) {
-      // Handle any errors that occur during URL launching
       print("Error launching URL: $e");
     }
   }
 
   void _openContactOptions() {
-    final localizations = AppLocalizations.of(context);
-
     showModalBottomSheet(
       context: context,
       builder: (context) => ContactBottomSheet(contacts: _contacts),
@@ -141,7 +138,7 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(width: 12),
             Text(
-              localizations?.appName ?? 'M9 Asia',
+              localizations?.appName ?? 'appName',
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -154,7 +151,7 @@ class _HomePageState extends State<HomePage> {
           IconButton(
             icon: const Icon(Icons.language, color: Colors.white),
             onPressed: _changeLanguage,
-            tooltip: localizations?.language ?? 'Language',
+            tooltip: localizations?.language ?? 'language',
           ),
           IconButton(
             icon: const Icon(Icons.info_outline, color: Colors.white),
@@ -166,7 +163,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               );
             },
-            tooltip: localizations?.privacyPolicy ?? 'Privacy Policy',
+            tooltip: localizations?.privacyPolicy ?? 'privacyPolicy',
           ),
         ],
       ),
@@ -188,7 +185,7 @@ class _HomePageState extends State<HomePage> {
                   ElevatedButton.icon(
                     onPressed: _loadData,
                     icon: const Icon(Icons.refresh),
-                    label: Text(localizations?.retry ?? 'Retry'),
+                    label: Text(localizations?.retry ?? 'retry'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppConstants.primaryColor,
                       foregroundColor: Colors.white,
@@ -211,7 +208,7 @@ class _HomePageState extends State<HomePage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        localizations?.helloReader ?? 'Hello Reader!',
+                        localizations?.helloReader ?? 'helloReader',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w500,
@@ -220,7 +217,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        localizations?.discoverNews ?? 'Discover Latest News',
+                        localizations?.discoverNews ?? 'discoverNews',
                         style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -238,7 +235,7 @@ class _HomePageState extends State<HomePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          localizations?.categories ?? 'Categories',
+                          localizations?.categories ?? 'categories',
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -280,7 +277,7 @@ class _HomePageState extends State<HomePage> {
                                         : null,
                                   ),
                                   child: Text(
-                                    localizations?.all ?? 'All',
+                                    localizations?.all ?? 'all',
                                     style: TextStyle(
                                       color: _selectedCategory == null
                                           ? Colors.white
@@ -319,7 +316,7 @@ class _HomePageState extends State<HomePage> {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                localizations?.noNews ?? 'No news available',
+                                localizations?.noNews ?? 'noNews',
                                 style: const TextStyle(
                                   fontSize: 16,
                                   color: Colors.grey,
