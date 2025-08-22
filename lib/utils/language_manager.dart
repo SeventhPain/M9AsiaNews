@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:m9_news/l10n/app_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:m9_news/services/language_service.dart';
+import 'package:http/http.dart' as http;
 
 class LanguageManager {
   static const String _languageKey = 'selected_language';
@@ -16,14 +18,7 @@ class LanguageManager {
   }
 
   static Locale getLocale(String languageCode) {
-    switch (languageCode) {
-      case 'en':
-        return const Locale('en', '');
-      case 'my':
-        return const Locale('my', '');
-      default:
-        return const Locale('my', ''); // Myanmar as default
-    }
+    return Locale(languageCode, '');
   }
 
   static String getLanguageName(String languageCode, BuildContext context) {
@@ -34,7 +29,20 @@ class LanguageManager {
       case 'my':
         return localizations?.myanmar ?? 'Myanmar';
       default:
-        return localizations?.myanmar ?? 'Myanmar';
+        return languageCode.toUpperCase();
+    }
+  }
+
+  // Check if a language is available in API
+  static Future<bool> isLanguageAvailable(String languageCode) async {
+    try {
+      final languageService = LanguageService(client: http.Client());
+      final availableLanguages = await languageService
+          .getAvailableLanguageCodes();
+      return availableLanguages.contains(languageCode);
+    } catch (e) {
+      // If API fails, assume only en and my are available
+      return ['en', 'my'].contains(languageCode);
     }
   }
 }

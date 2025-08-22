@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:m9_news/services/language_service.dart';
+import 'package:http/http.dart' as http;
 
 class AppLocalizations {
   final Locale locale;
+  Map<String, String> _currentStrings = {};
 
   AppLocalizations(this.locale);
 
@@ -14,7 +16,8 @@ class AppLocalizations {
   static const LocalizationsDelegate<AppLocalizations> delegate =
       _AppLocalizationsDelegate();
 
-  static Map<String, Map<String, String>> _localizedValues = {
+  // Static fallback translations
+  static final Map<String, Map<String, String>> _fallbackLocalizedValues = {
     'en': {
       'appName': 'M9 News',
       'helloReader': 'Hello Reader!',
@@ -55,7 +58,7 @@ class AppLocalizations {
       'contactUs': 'ဆက်သွယ်ရန်',
       'call': 'ဖုန်းခေါ်ဆိုရန်',
       'email': 'အီးမေးလ်',
-      'chat': '�ျတ်',
+      'chat': 'ချတ်',
       'refresh': 'ပြန်လည်မွမ်းမံရန်',
       'football': 'ဘောလုံး',
       'cartoon': 'ကာတွန်း',
@@ -71,37 +74,78 @@ class AppLocalizations {
     },
   };
 
-  String get appName => _localizedValues[locale.languageCode]!['appName']!;
-  String get helloReader =>
-      _localizedValues[locale.languageCode]!['helloReader']!;
-  String get discoverNews =>
-      _localizedValues[locale.languageCode]!['discoverNews']!;
-  String get categories =>
-      _localizedValues[locale.languageCode]!['categories']!;
-  String get all => _localizedValues[locale.languageCode]!['all']!;
-  String get noNews => _localizedValues[locale.languageCode]!['noNews']!;
-  String get readMore => _localizedValues[locale.languageCode]!['readMore']!;
-  String get retry => _localizedValues[locale.languageCode]!['retry']!;
-  String get errorMessage =>
-      _localizedValues[locale.languageCode]!['errorMessage']!;
-  String get contactUs => _localizedValues[locale.languageCode]!['contactUs']!;
-  String get call => _localizedValues[locale.languageCode]!['call']!;
-  String get email => _localizedValues[locale.languageCode]!['email']!;
-  String get chat => _localizedValues[locale.languageCode]!['chat']!;
-  String get refresh => _localizedValues[locale.languageCode]!['refresh']!;
-  String get football => _localizedValues[locale.languageCode]!['football']!;
-  String get cartoon => _localizedValues[locale.languageCode]!['cartoon']!;
-  String get game => _localizedValues[locale.languageCode]!['game']!;
-  String get settings => _localizedValues[locale.languageCode]!['settings']!;
-  String get language => _localizedValues[locale.languageCode]!['language']!;
-  String get english => _localizedValues[locale.languageCode]!['english']!;
-  String get myanmar => _localizedValues[locale.languageCode]!['myanmar']!;
-  String get selectLanguage =>
-      _localizedValues[locale.languageCode]!['selectLanguage']!;
-  String get cancel => _localizedValues[locale.languageCode]!['cancel']!;
-  String get save => _localizedValues[locale.languageCode]!['save']!;
-  String get privacyPolicy =>
-      _localizedValues[locale.languageCode]!['privacyPolicy']!;
+  // Initialize - try API first, fallback to static if fails
+  Future<void> initialize() async {
+    final languageService = LanguageService(client: http.Client());
+
+    try {
+      // Try to fetch all languages from API
+      final Map<String, Map<String, String>> allLanguages =
+          await languageService.fetchAllLanguageStrings();
+
+      // Check if current locale is supported by API
+      if (allLanguages.containsKey(locale.languageCode)) {
+        _currentStrings = allLanguages[locale.languageCode]!;
+        if (kDebugMode) {
+          print('Loaded ${locale.languageCode} strings from API');
+        }
+      } else {
+        // If current locale not in API, fallback to static
+        throw Exception('Language ${locale.languageCode} not available in API');
+      }
+    } catch (e) {
+      // Fallback to static values if API fails
+      if (kDebugMode) {
+        print('Using fallback language strings for ${locale.languageCode}: $e');
+      }
+      _currentStrings =
+          _fallbackLocalizedValues[locale.languageCode] ??
+          _fallbackLocalizedValues['my']!;
+    }
+  }
+
+  // Get string with proper fallback handling
+  String _getString(String key) {
+    // Try current strings (from API or fallback)
+    if (_currentStrings.containsKey(key)) {
+      return _currentStrings[key]!;
+    }
+
+    // Fallback to Myanmar static values
+    if (_fallbackLocalizedValues['my']!.containsKey(key)) {
+      return _fallbackLocalizedValues['my']![key]!;
+    }
+
+    // Final fallback to key itself
+    return key;
+  }
+
+  // Getters for all strings
+  String get appName => _getString('appName');
+  String get helloReader => _getString('helloReader');
+  String get discoverNews => _getString('discoverNews');
+  String get categories => _getString('categories');
+  String get all => _getString('all');
+  String get noNews => _getString('noNews');
+  String get readMore => _getString('readMore');
+  String get retry => _getString('retry');
+  String get errorMessage => _getString('errorMessage');
+  String get contactUs => _getString('contactUs');
+  String get call => _getString('call');
+  String get email => _getString('email');
+  String get chat => _getString('chat');
+  String get refresh => _getString('refresh');
+  String get football => _getString('football');
+  String get cartoon => _getString('cartoon');
+  String get game => _getString('game');
+  String get settings => _getString('settings');
+  String get language => _getString('language');
+  String get english => _getString('english');
+  String get myanmar => _getString('myanmar');
+  String get selectLanguage => _getString('selectLanguage');
+  String get cancel => _getString('cancel');
+  String get save => _getString('save');
+  String get privacyPolicy => _getString('privacyPolicy');
 }
 
 class _AppLocalizationsDelegate
@@ -110,14 +154,17 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) {
-    return ['en', 'my'].contains(locale.languageCode);
+    // Support all languages that might come from API
+    return true; // We'll dynamically check availability
   }
 
   @override
-  Future<AppLocalizations> load(Locale locale) {
-    return SynchronousFuture<AppLocalizations>(AppLocalizations(locale));
+  Future<AppLocalizations> load(Locale locale) async {
+    final appLocalizations = AppLocalizations(locale);
+    await appLocalizations.initialize();
+    return appLocalizations;
   }
 
   @override
-  bool shouldReload(_AppLocalizationsDelegate old) => false;
+  bool shouldReload(_AppLocalizationsDelegate old) => true;
 }

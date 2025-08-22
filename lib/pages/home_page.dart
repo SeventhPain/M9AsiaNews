@@ -140,9 +140,9 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             const SizedBox(width: 12),
-            const Text(
-              'M9 Asia',
-              style: TextStyle(
+            Text(
+              localizations?.appName ?? 'M9 Asia',
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,

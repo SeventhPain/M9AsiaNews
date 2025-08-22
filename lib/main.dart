@@ -2,13 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:m9_news/l10n/app_localization.dart';
 import 'package:m9_news/utils/constants.dart';
-import 'utils/language_manager.dart';
-import 'pages/home_page.dart';
+import 'package:m9_news/utils/language_manager.dart';
+import 'package:m9_news/pages/home_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Get saved language or use Myanmar as default
   final String languageCode = await LanguageManager.getLanguage();
-  runApp(MyApp(locale: LanguageManager.getLocale(languageCode)));
+
+  // Verify the language is available, fallback to my if not
+  final bool isLanguageAvailable = await LanguageManager.isLanguageAvailable(
+    languageCode,
+  );
+  final String finalLanguageCode = isLanguageAvailable ? languageCode : 'my';
+
+  runApp(MyApp(locale: LanguageManager.getLocale(finalLanguageCode)));
 }
 
 class MyApp extends StatefulWidget {
@@ -50,7 +59,11 @@ class _MyAppState extends State<MyApp> {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: const [Locale('en', ''), Locale('my', '')],
+      supportedLocales: const [
+        Locale('en', ''),
+        Locale('my', ''),
+        // Add more locales as needed, they will be dynamically checked
+      ],
       theme: ThemeData(
         primaryColor: AppConstants.primaryColor,
         colorScheme: ColorScheme.fromSwatch().copyWith(
