@@ -1,18 +1,56 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:m9_news/l10n/app_localization.dart';
 import 'package:m9_news/utils/constants.dart';
+import 'utils/language_manager.dart';
 import 'pages/home_page.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final String languageCode = await LanguageManager.getLanguage();
+  runApp(MyApp(locale: LanguageManager.getLocale(languageCode)));
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+class MyApp extends StatefulWidget {
+  final Locale locale;
+
+  const MyApp({Key? key, required this.locale}) : super(key: key);
+
+  @override
+  _MyAppState createState() => _MyAppState();
+
+  static _MyAppState? of(BuildContext context) =>
+      context.findAncestorStateOfType<_MyAppState>();
+}
+
+class _MyAppState extends State<MyApp> {
+  Locale? _locale;
+
+  @override
+  void initState() {
+    super.initState();
+    _locale = widget.locale;
+  }
+
+  void setLocale(Locale locale) async {
+    setState(() {
+      _locale = locale;
+    });
+    await LanguageManager.saveLanguage(locale.languageCode);
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'M9 Asia',
+      title: 'M9 News',
+      locale: _locale,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [Locale('en', ''), Locale('my', '')],
       theme: ThemeData(
         primaryColor: AppConstants.primaryColor,
         colorScheme: ColorScheme.fromSwatch().copyWith(
@@ -25,14 +63,6 @@ class MyApp extends StatelessWidget {
           foregroundColor: Colors.white,
           elevation: 0,
         ),
-        // textTheme: const TextTheme(
-        //   headline6: TextStyle(
-        //     fontSize: 20,
-        //     fontWeight: FontWeight.bold,
-        //     color: AppConstants.textColor,
-        //   ),
-        //   bodyText2: TextStyle(fontSize: 16, color: AppConstants.textColor),
-        // ),
       ),
       home: const HomePage(),
       debugShowCheckedModeBanner: false,

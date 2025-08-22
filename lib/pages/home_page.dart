@@ -2,7 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:m9_news/l10n/app_localization.dart';
 import 'package:m9_news/widgets/contact_bottom_sheet.dart';
+import 'package:m9_news/main.dart';
+import 'package:m9_news/widgets/language_dialog.dart';
 import '../services/api_service.dart';
 import '../models/news_model.dart';
 import '../models/news_type_model.dart';
@@ -58,6 +61,18 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  void _changeLanguage() async {
+    final currentLanguage = Localizations.localeOf(context).languageCode;
+    final selectedLanguage = await showDialog<String>(
+      context: context,
+      builder: (context) => LanguageDialog(currentLanguage: currentLanguage),
+    );
+
+    if (selectedLanguage != null) {
+      MyApp.of(context)?.setLocale(Locale(selectedLanguage));
+    }
+  }
+
   void _onCategorySelected(NewsType category) {
     setState(() {
       _selectedCategory = category;
@@ -94,6 +109,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _openContactOptions() {
+    final localizations = AppLocalizations.of(context);
+
     showModalBottomSheet(
       context: context,
       builder: (context) => ContactBottomSheet(contacts: _contacts),
@@ -102,6 +119,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -133,6 +152,11 @@ class _HomePageState extends State<HomePage> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.language, color: Colors.white),
+            onPressed: _changeLanguage,
+            tooltip: localizations?.language ?? 'Language',
+          ),
+          IconButton(
             icon: const Icon(Icons.info_outline, color: Colors.white),
             onPressed: () {
               Navigator.push(
@@ -142,7 +166,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               );
             },
-            tooltip: 'Privacy Policy',
+            tooltip: localizations?.privacyPolicy ?? 'Privacy Policy',
           ),
         ],
       ),
@@ -164,7 +188,7 @@ class _HomePageState extends State<HomePage> {
                   ElevatedButton.icon(
                     onPressed: _loadData,
                     icon: const Icon(Icons.refresh),
-                    label: const Text(AppStrings.retry),
+                    label: Text(localizations?.retry ?? 'Retry'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppConstants.primaryColor,
                       foregroundColor: Colors.white,
@@ -180,12 +204,47 @@ class _HomePageState extends State<HomePage> {
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Welcome section
+                Container(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        localizations?.helloReader ?? 'Hello Reader!',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        localizations?.discoverNews ?? 'Discover Latest News',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: AppConstants.textColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
                 if (_categories.isNotEmpty)
                   Container(
                     padding: const EdgeInsets.fromLTRB(20, 10, 20, 15),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Text(
+                          localizations?.categories ?? 'Categories',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: Row(
@@ -221,7 +280,7 @@ class _HomePageState extends State<HomePage> {
                                         : null,
                                   ),
                                   child: Text(
-                                    AppStrings.all,
+                                    localizations?.all ?? 'All',
                                     style: TextStyle(
                                       color: _selectedCategory == null
                                           ? Colors.white
@@ -259,9 +318,9 @@ class _HomePageState extends State<HomePage> {
                                 color: Colors.grey[400],
                               ),
                               const SizedBox(height: 16),
-                              const Text(
-                                AppStrings.noNews,
-                                style: TextStyle(
+                              Text(
+                                localizations?.noNews ?? 'No news available',
+                                style: const TextStyle(
                                   fontSize: 16,
                                   color: Colors.grey,
                                 ),
